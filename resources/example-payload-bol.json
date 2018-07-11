@@ -1,0 +1,278 @@
+{
+  "headerInformation": {
+    "declaredValue": 20000.34,
+    "declaredValueCurrency": "USD",
+    "documentDate": "2018-07-09",
+    "locationOfRelease": {
+      "locationId": 0,
+      "unloCode": "DEBRV",
+      "countryId": 0,
+      "locationName": "Bremen",
+      "countryName": "Deutschland",
+      "countryCode": "DE"
+    },
+    "publishedVersion": 1,
+    "currentVersion": 1
+  },
+  "contractOfCarriage": {
+    "termsAndConditions": {
+      "referenceId": "SUDU12345645645",
+      "contractDate": "2018-07-09",
+      "clauses": [
+        {
+          "content": "Clause 1",
+          "clauseNumber": 1
+        },
+        {
+          "content": "Clause 2",
+          "clauseNumber": 2
+        }
+      ]
+    },
+    "references": [
+      {
+        "value": "SUDU12345645645",
+        "type": "BILL_OF_LADING_NUMBER"
+      },
+      {
+        "value": "8SZC6789",
+        "type": "BOOKING_NUMBER"
+      },
+      {
+        "value": "72934343434343434",
+        "type": "EXPORTER_REFERENCE_NUMBER"
+      }
+    ],
+    "transportDetails": {
+      "carrier": {
+        "partyType": "CARRIER",
+        "organizationalIdentifier": {
+          "identifierName": "SCAC",
+          "identifierValue": "SUDU"
+        },
+        "organizationName": "HAMBURG SUD"
+      },
+      "portOfLoad": {
+        "locationId": 0,
+        "unloCode": "BRSSL",
+        "countryId": 0,
+        "locationName": "SALVADOR",
+        "subdivisionName": "BA",
+        "countryName": "BRASIL"
+      },
+      "placeOfDelivery": {
+        "locationId": 0,
+        "unloCode": "JPYKK",
+        "countryId": 0,
+        "locationName": "YOKKAICHI",
+        "countryName": "JAPAN"
+      },
+      "portOfDischarge": {
+        "locationId": 0,
+        "unloCode": "KRPUS",
+        "countryId": 0,
+        "locationName": "BUSAN",
+        "countryName": "South Korea"
+      },
+      "vessel": {
+        "vesselName": "PEDRO ALVAREZ CABRAL"
+      },
+      "voyageNumber": "049 S"
+    },
+    "freightCharges": {
+      "charges": [
+        {
+          "name": "Ocean Freight",
+          "code": "BAS",
+          "cost": 1700,
+          "currencyCode": "USD",
+          "included": false,
+          "applicable": false
+        },
+        {
+          "name": "Bunker Adjustment",
+          "code": "BAF",
+          "cost": 328,
+          "currencyCode": "USD",
+          "included": false,
+          "applicable": false
+        },
+        {
+          "name": "Chasis Charge",
+          "code": "CUC",
+          "cost": 70,
+          "currencyCode": "USD",
+          "included": false,
+          "applicable": false
+        },
+        {
+          "name": "Port Security Fee",
+          "code": "PSS",
+          "cost": 70,
+          "currencyCode": "USD",
+          "included": false,
+          "applicable": false
+        }
+      ],
+      "rateBasis": "DOCUMENT",
+      "paymentLocation": {
+        "locationId": 0,
+        "unloCode": "BRSSL",
+        "countryId": 0,
+        "locationName": "SALVADOR",
+        "subdivisionName": "BA",
+        "countryName": "BRASIL"
+      }
+    },
+    "cargo": [
+      {
+        "lineNumber": 1,
+        "equipment": {
+          "container": {
+            "identifier": "TRLU3936006",
+            "code": "22G0",
+            "weightsAndVolumes": {
+              "tareWeight": {
+                "unit": "KGS",
+                "value": 2220
+              }
+            }
+          },
+          "seal": {
+            "identifier": "5753002"
+          },
+          "mark": [
+            "Cnt. Ld. FCLFCL",
+            "VERO CERAMIC CO LTD",
+            "PO 156-Y-11-074-201807"
+          ]
+        },
+        "goods": {
+          "packageDetails": [
+            {
+              "quantity": 20,
+              "packageMeasurements": {
+                "netWeight": {
+                  "unit": "KGS",
+                  "value": 25000
+                },
+                "grossWeight": {
+                  "unit": "KGS",
+                  "value": 25800
+                }
+              },
+              "hsCommodityCode": "25199090",
+              "marks": [
+                "20 BIG BAGS",
+                "NATURAL MAGNESIUM CARBONATE (MAGNESITE)",
+                "INOICE 000169/18"
+              ]
+            }
+          ],
+          "totalNumberOfPackages": 160,
+          "totalWeight": {
+            "unit": "KGS",
+            "value": 200800
+          },
+          "totalVolume": {
+            "unit": "CBM",
+            "value": 265.6
+          }
+        }
+      }
+    ]
+  },
+  "titleOfOwnership": {
+    "titleHolder": {
+      "partyType": "SHIPPER",
+      "organizationName": "KUEHNE + NAGEL SERV LOGIST LTDA",
+      "address": {
+        "line1": "R FERNANDEZ TOURINHO, 470 SL 706/707 ",
+        "locationDetail": {
+          "locationId": 0,
+          "countryId": 0,
+          "locationName": "BELO Horizonte",
+          "subdivisionName": "MG",
+          "countryName": "BRASIL"
+        },
+        "postalCode": "30112-000"
+      },
+      "additionalInfo": "AGENT OF BLUE ANCHOR LINE"
+    },
+    "ownershipTime": "2018-07-09"
+  },
+  "parties": {
+    "parties": [
+      {
+        "partyType": "SHIPPER",
+        "organizationName": "KUEHNE + NAGEL SERV LOGIST LTDA",
+        "address": {
+          "line1": "R FERNANDEZ TOURINHO, 470 SL 706/707 ",
+          "locationDetail": {
+            "locationId": 0,
+            "countryId": 0,
+            "locationName": "BELO Horizonte",
+            "subdivisionName": "MG",
+            "countryName": "BRASIL"
+          },
+          "postalCode": "30112-000"
+        },
+        "additionalInfo": "AGENT OF BLUE ANCHOR LINE"
+      },
+      {
+        "partyType": "CONSIGNEE",
+        "organizationName": "KUEHNE + NAGEL LTD",
+        "address": {
+          "line1": "NISHI-HONMACHI INTES BUILDING 10/F",
+          "line2": "2-3-10 NISHI-HONMACHI",
+          "locationDetail": {
+            "locationId": 0,
+            "countryId": 0,
+            "locationName": "NISHI-KU OSAKA",
+            "countryName": "JAPAN"
+          },
+          "postalCode": "550-0005"
+        },
+        "additionalInfo": "AGENT OF BLUE ANCHOR LINE"
+      },
+      {
+        "partyType": "NOTIFY_PARTY",
+        "organizationName": "KUEHNE + NAGEL LTD",
+        "address": {
+          "line1": "NISHI-HONMACHI INTES BUILDING 10/F",
+          "line2": "2-3-10 NISHI-HONMACHI",
+          "locationDetail": {
+            "locationId": 0,
+            "countryId": 0,
+            "locationName": "NISHI-KU OSAKA",
+            "countryName": "JAPAN"
+          },
+          "postalCode": "550-0005"
+        },
+        "additionalInfo": "AGENT OF BLUE ANCHOR LINE"
+      },
+      {
+        "partyType": "NOTIFY_PARTY",
+        "organizationName": "BANK OF IMPORT",
+        "address": {
+          "line1": "KISHI-HARRAKO 12 BLDG 10",
+          "locationDetail": {
+            "locationId": 0,
+            "countryId": 0,
+            "locationName": "TOKYO",
+            "countryName": "JAPAN"
+          },
+          "postalCode": "750-1005"
+        }
+      },
+      {
+        "partyType": "CARRIER",
+        "organizationalIdentifier": {
+          "identifierName": "SCAC",
+          "identifierValue": "SUDU"
+        },
+        "organizationName": "HAMBURG SUD"
+      }
+    ]
+  }
+}

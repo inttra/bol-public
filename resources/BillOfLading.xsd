@@ -1,0 +1,1215 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="XMLSchema1"
+           targetNamespace="http://api.inttra.com/billoflading/v1/BillOfLading.xsd"
+           elementFormDefault="qualified"
+           xmlns="http://api.inttra.com/billoflading/v1/BillOfLading.xsd"
+           xmlns:mstns="http://api.inttra.com/billoflading/v1/BillOfLading.xsd"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:element name="BillOfLading">
+    <xs:annotation>
+      <xs:documentation>XSD Schema for the Bill of Lading. The schema is intended to digitize the
+        process of handling negotiable as well as non-negotiable documents. The schema is divided into
+        6 main elements: Header Information - general information about the document; Contract Of Carriage -
+        expresses information about term and conditions of the shipment, references, routing - transportation details,
+        freight charges as well as cargo information; Receipt of Goods is intended as an immutable digital stamp
+        for the receipt of goods; Title of Ownership node is a critical piece of ownership that signifies the ownership of
+        the document. The information in this node is managed by the service; PDf image contains the image of the document
+        in the pdf form; finally parties list all parties that participate in the bol transaction.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="HeaderInformation" type="GeneralInformationType"/>
+        <xs:element name="ContractOfCarriage" type="ContractOfCarriageType" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="ReceiptOfGoods" type="ReceiptOfGoodsType" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="TitleOfOwnership" type="TitleType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="PdfImage" type="DocumentImageType" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="Parties" type="PartiesType" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="BillOfLadingType" type="BillOfLadingBaseType" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:annotation>
+    <xs:documentation>
+      General Information about the document.
+    </xs:documentation>
+  </xs:annotation>
+  <xs:complexType name="GeneralInformationType">
+    <xs:sequence>
+      <xs:element name="DeclaredValue" type="xs:integer" minOccurs="0"/>
+      <!--- if value declared but no currency type, it is assumed USD -->
+      <xs:element name="DeclaredValueCurrency" type="CurrencyTypeCode" minOccurs="0"/>
+      <xs:element name="DocumentDate" type="xs:date"/>
+      <xs:element name="LocationOfRelease" type="Location" minOccurs="0"/>
+      <xs:element name="PublishedVersion" type="xs:int" minOccurs="1"/>
+      <xs:element name="Version" type="xs:int" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:complexType name="ContractOfCarriageType">
+    <xs:sequence>
+      <xs:element name="TermsAndConditions" type="TermsAndConditionsType"/>
+      <xs:element name="References" type="ReferencesType"/>
+      <xs:element name="TransportDetails" type="TransportationDetailsType"/>
+      <xs:element name="FreightCharges" type="FreightChargesType"/>
+      <xs:element name="Cargo" type="CargoType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:annotation>
+    <xs:documentation>
+      TermsandConditionsType is intended to manage TsCs of the Bill of Lading. It is a list of number clauses that
+      could be changed via an amendment process implemented by the API
+    </xs:documentation>
+  </xs:annotation>
+  <xs:complexType name="TermsAndConditionsType">
+    <xs:sequence>
+      <xs:element name="ReferenceId" type="xs:string" minOccurs="0"/>
+      <xs:element name="ContractDate" type="xs:date" minOccurs="0"/>
+      <xs:element name="Clause" type="ClauseType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name = "ClauseType">
+    <xs:sequence>
+      <xs:element name="Content" type="xs:string"/>
+    </xs:sequence>
+    <xs:attribute name="ClauseNumber" type="xs:int"/>
+  </xs:complexType>
+
+  <xs:annotation>
+    <xs:documentation>
+      The References type contains the collection of all references used on the document. The allowed reference types
+      are enums defined in the enum section of this schema
+    </xs:documentation>
+  </xs:annotation>
+  <xs:complexType name="ReferencesType">
+    <xs:sequence>
+    <xs:element name="Reference" type="ReferenceType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ReferenceType">
+    <xs:sequence>
+      <xs:element name="Value" type="xs:string" minOccurs="1"/>
+      <xs:element name="Type" type="ReferenceNameType" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:complexType name="TransportationDetailsType">
+    <xs:sequence>
+      <xs:element name="Carrier" type="PartyType" minOccurs="1"/>
+      <xs:element name="PlaceOfReceipt" type="Location" minOccurs="0"/>
+      <!-- start location for the rate , required. If the LocationFrom = Port of Load
+       (see below attribute) the port of load value will be repeated -->
+      <xs:element name="PortOfLoad" type="Location" minOccurs="1"/>
+      <!-- Port of Load for the Rate-->
+      <xs:element name="PlaceOfDelivery" type="Location" minOccurs="0"/>
+      <!-- end location for the rate , required -->
+      <xs:element name="PortOfDischarge" type="Location" minOccurs="1"/>
+      <xs:element name="Vessel" type="VesselType" minOccurs="1"/>
+      <xs:element name="VoyageNumber" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="VesselType">
+    <xs:sequence>
+      <xs:element name="VesselName" type="xs:string" minOccurs="1"/>
+      <xs:element name="IMONumber" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:annotation>
+    <xs:documentation>
+      The FreightCharges Type is a collection of charges defined in the Bill of Lading document
+    </xs:documentation>
+  </xs:annotation>
+  <xs:complexType name="FreightChargesType">
+    <xs:sequence>
+      <xs:element name="Charges" type="ChargesType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="RateBasis" type="RateBasisType" minOccurs="0"/>
+      <xs:element name="CalculationBasis" type="CalculationBasisType" minOccurs="0"/>
+      <xs:element name="PaymentLocation" type="Location" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:complexType name="ChargesType">
+    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Item" type="Charge"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Charge">
+    <xs:sequence>
+      <xs:element name="Name" type="xs:string" /> <!-- name of the charge: Base, Bunker - etc -->
+      <xs:element name="Code" type="xs:string" />
+      <xs:element name="Cost" type="xs:decimal"/>
+      <xs:element name="CurrencyCode" type="CurrencyTypeCode"/>
+      <xs:element name="PaymentTerms" type="PaymentTermsType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:simpleType name="RateBasisType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PerContainer"/>
+      <xs:enumeration value="PerDocument"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="CalculationBasisType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Unitary"/>
+      <xs:enumeration value="Percentage"/>
+      <xs:enumeration value="Fixed"/>
+      <xs:enumeration value="Teu"/>
+      <xs:enumeration value="MetricTon"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PaymentTermsType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Prepaid"/>
+      <xs:enumeration value="Collect"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:annotation>
+    <xs:documentation>
+      The Cargo Type is a collection of cargo lines specified in the Bill of Lading document
+    </xs:documentation>
+  </xs:annotation>
+  <xs:complexType name="CargoType">
+    <xs:sequence>
+      <xs:element name="CargoLine" type="CargoLineType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CargoLineType">
+    <xs:sequence>
+      <xs:element name="lineNumber" type="xs:int" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="Equipment" type="EquipmentType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="WeightsAndVolumes" type="WeightsAndVolumesType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="Goods" type="GoodsType" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:complexType name="EquipmentType">
+    <xs:sequence>
+      <xs:element name="Container" type="ContainerType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="Seal" type="SealType" minOccurs="0"/>
+      <xs:element name="Mark" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ContainerType">
+    <xs:sequence>
+      <xs:element name="Identifier" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="Code" type="ContainerTypeCode" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="Description" type="xs:string" minOccurs="0"/>
+      <xs:element name="IsFumigated" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="IsLiveReefer" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="WeightsAndVolumes" type="WeightsAndVolumesType" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SealType">
+    <xs:sequence>
+      <xs:element name="Identifier" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="SealingParty" type="SealingPartyType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="WeightsAndVolumesType">
+    <xs:sequence>
+      <xs:element name="NetWeight" type="WeightType" minOccurs="0"/>
+      <xs:element name="TareWeight" type="WeightType" minOccurs="0"/>
+      <xs:element name="GrossVolume" type="VolumeType" minOccurs="0"/>
+      <xs:element name="NetVolume" type="VolumeType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name = "WeightType">
+    <xs:sequence>
+      <xs:element name="Unit" type="UnitOfWeightType" minOccurs="1"/>
+      <xs:element name="Value" type="xs:decimal" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name = "VolumeType">
+    <xs:sequence>
+      <xs:element name="Unit" type="UnitOfVolumeType" minOccurs="1"/>
+      <xs:element name="Value" type="xs:decimal" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GoodsType">
+    <xs:sequence>
+      <xs:element name="Description" type="xs:string" minOccurs="0"/>
+      <xs:element name="PackageDetail" type="PackageDetailType" maxOccurs="unbounded"/>
+      <xs:element name="HazardousGoodsInformation" type="HazardousGoodsType" minOccurs="0"/>
+      <xs:element name="TotalNumberFfPackages" type="xs:int" minOccurs="0"/>
+      <xs:element name="TotalWeight" type="WeightType" minOccurs="0"/>
+      <xs:element name="TotalVolume" type="VolumeType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PackageDetailType">
+    <xs:sequence>
+      <xs:element name="Quantity" type="xs:int" minOccurs="1" />
+      <xs:element name="PackageTypeInformation" type="PackageType" minOccurs="0"/>
+      <xs:element name="PackageMeasurements" type="WeightsAndVolumesType" minOccurs="0"/>
+      <xs:element name="HSCommodityCode" type="xs:string" minOccurs="0"/>
+      <xs:element name="ExportLicense" type="ExportLicenceType" minOccurs="0"/>
+      <xs:element name="Marks" type="MultiLineStringType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PackageType">
+    <xs:sequence>
+      <xs:annotation><xs:documentation>UNECE 2 character package type code</xs:documentation></xs:annotation>
+      <xs:element name="PackageCode" type="xs:string" minOccurs="0"/>
+      <xs:element name="PackageDescription" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ExportLicenceType">
+    <xs:sequence>
+      <xs:element name="ExportLicenseNumber" type="xs:string" minOccurs="1"/>
+      <xs:element name="IssueDate" type="xs:date" minOccurs="0"/>
+      <xs:element name="ExpiryDate" type="xs:date" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="HazardousGoodsType">
+    <xs:sequence>
+      <xs:element name="IMOClassCode" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="IMDGPageNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="UNDGNumber" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="FlashpointTemperature" type="FlashpointTemperatureType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="EmergencyResponseContact" type="ContactType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="Comments" type="HazardousGoodsComments" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="PackingGroupCode" type="PackingGroupCodeType" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="FlashpointTemperatureType">
+    <xs:attribute name="UnitOfTemperature" type="UnitOfTemperatureType" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="HazardousGoodsComments">
+    <xs:sequence>
+      <xs:element name="Content" type="xs:string" minOccurs="1"/>
+      <xs:element name="CommentsType" type="HazardousGoodsCommentsType" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+
+  <xs:annotation>
+    <xs:documentation>
+      This type expresses information about receipt of goods.
+    </xs:documentation>
+  </xs:annotation>
+  <xs:complexType name="ReceiptOfGoodsType">
+    <xs:sequence>
+      <xs:element name="ReceiptLocation" type="Location" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="ReceivedBy" type="PartyType" minOccurs="1"/>
+      <xs:element name="ReceivedLocation" type="Location"/>
+      <xs:element name="ReceivedDateTime" type="xs:dateTime"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:annotation>
+    <xs:documentation>
+      This type contains document image of the BillofLading.
+    </xs:documentation>
+  </xs:annotation>
+  <xs:complexType name="DocumentImageType">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="mimetype" type="xs:string" />
+      <xs:element minOccurs="0" name="filename" type="xs:string" />
+      <xs:element name="content" type="xs:base64Binary" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:annotation>
+    <xs:documentation>
+      All parties defined in this Bill of Lading. Ownership changes can only be
+      done between parties defined in the document
+    </xs:documentation>
+  </xs:annotation>
+  <xs:complexType name="PartiesType">
+    <xs:sequence>
+      <xs:element name="Party" type="PartyType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PartyType">
+    <xs:sequence>
+      <xs:element name="PartyNameType" type="PartyNameType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="OrganizationalIdentifier" type="OrganizationalIdentifierType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="OrganizationName" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="Address" type="AddressType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="ContactInfo" type="ContactType" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="AdditionalInfo" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="OrganizationalIdentifierType">
+    <xs:sequence>
+      <xs:element name="IdentifierName" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="IdentifierValue" type="xs:string" minOccurs="1"/>
+      <xs:element name="Description" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="CountryOfOrigin" type="xs:string" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Location">
+    <xs:sequence>
+      <xs:element name ="UNLOCODE" type="xs:string" minOccurs="1"/>
+      <xs:element name ="LocationName" type="xs:string" minOccurs="0"/>
+      <xs:element name ="SubdivisionName" type="xs:string"minOccurs="0"/>
+      <xs:element name ="CountryName" type="xs:string" minOccurs="0"/>
+      <xs:element name ="CountryCode" type="xs:string" minOccurs="0"/>
+      <xs:element name ="Continent" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AddressType">
+    <xs:sequence>
+      <xs:element name="Line1" type="xs:string" minOccurs="1"/>
+      <xs:element name="Line2" type="xs:string" minOccurs="0"/>
+      <xs:element name="LocationDetail" type="Location" minOccurs="1"/>
+      <xs:element name="PostalCode" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ContactType">
+    <xs:sequence>
+      <xs:element name="ContactName" type="xs:string" minOccurs="1" />
+      <xs:element name="TelephoneNumberOffice" type="xs:string" minOccurs="0"/>
+      <xs:element name="TelephoneNumberMobile" type="xs:string" minOccurs="0"/>
+      <xs:element name="TelephoneNumberOther" type="xs:string" minOccurs="0"/>
+      <xs:element name="EmailAddressPrimary" type="xs:string" minOccurs="0"/>
+      <xs:element name="EmailAddressSecondary" type="xs:string" minOccurs="0"/>
+      <xs:element name="TwitterHandle" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:annotation>
+    <xs:documentation>
+      This type contains information about the owner of the document. The BoL API will
+      allow ownership change of the negotiable documents betwen parties specified in this document.
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:complexType name="TitleType">
+    <xs:sequence>
+      <xs:element name="TitleHolder" type="PartyType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="UTCDateTimeOfOwnership" type="xs:dateTime" minOccurs="1"/>
+      <xs:element name="Remarks" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- utility types and enumerations -->
+  <xs:complexType name="MultiLineStringType">
+    <xs:sequence>
+      <xs:element name="Line" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="BillOfLadingBaseType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Negotiable"/>
+      <xs:enumeration value="NonNegotiable"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ReferenceNameType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="BillOfLadingNumber"/>
+      <xs:enumeration value="BookingNumber"/>
+      <xs:enumeration value="BrokerReferenceNumber"/>
+      <xs:enumeration value="ConsigneeOrderNumber"/>
+      <xs:enumeration value="ContractNumber"/>
+      <xs:enumeration value="CustomerShipmentIdentifier"/>
+      <xs:enumeration value="ExporterReferenceNumber"/>
+      <xs:enumeration value="FreightForwarderReference"/>
+      <xs:enumeration value="FederalMaritimeComNumber"/>
+      <xs:enumeration value="HouseBill"/>
+      <xs:enumeration value="InvoiceNumber"/>
+      <xs:enumeration value="PurchaseOrderNumber"/>
+      <xs:enumeration value="ShipmentID"/>
+      <xs:enumeration value="ShipperIdentifyingNumber"/>
+      <xs:enumeration value="TariffNumber"/>
+      <xs:enumeration value="TransactionReferenceNumber"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PartyNameType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Shipper"/>
+      <xs:enumeration value="Consignee"/>
+      <xs:enumeration value="Carrier"/>
+      <xs:enumeration value="NotifyParty"/>
+      <xs:enumeration value="CarrierAgent"/>
+      <xs:enumeration value="ForwardingAgent"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="SealingPartyType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Carrier"/>
+      <xs:enumeration value="Customs"/>
+      <xs:enumeration value="QuarantineAgency"/>
+      <xs:enumeration value="Shipper"/>
+      <xs:enumeration value="TerminalOperator"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PackingGroupCodeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MinorDanger"/>
+      <xs:enumeration value="MediumDanger"/>
+      <xs:enumeration value="GreatDanger"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="HazardousGoodsCommentsType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="General"/>
+      <xs:enumeration value="HazardousPlackard"/>
+      <xs:enumeration value="ProperShippingName"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="UnitOfTemperatureType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CEL"/><!-- Celsius -->
+      <xs:enumeration value="FAH"/><!-- Fahrenheit -->
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="UnitOfVolumeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CBM"/> <!-- Cubic Meter -->
+      <xs:enumeration value="CBF"/><!-- Cubic Feet -->
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="UnitOfWeightType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="KGS"/> <!-- Kilogram -->
+      <xs:enumeration value="LBS"/><!-- Pound -->
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="CurrencyTypeCode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AED"/>	<!-- ("United Arab Emirates dirham"), -->
+      <xs:enumeration value="AFN"/>	<!-- ("Afghan afghani"), -->
+      <xs:enumeration value="ALL"/>	<!-- ("Albanian lek"), -->
+      <xs:enumeration value="AMD"/>	<!-- ("Armenian dram"), -->
+      <xs:enumeration value="ANG"/>	<!-- ("Netherlands Antillean guilder"), -->
+      <xs:enumeration value="AOA"/>	<!-- ("Angolan kwanza"), -->
+      <xs:enumeration value="ARS"/>	<!-- ("Argentine peso"), -->
+      <xs:enumeration value="AUD"/>	<!-- ("Australian dollar"), -->
+      <xs:enumeration value="AWG"/>	<!-- ("Aruban florin"), -->
+      <xs:enumeration value="AZN"/>	<!-- ("Azerbaijani manat"), -->
+      <xs:enumeration value="BAM"/>	<!-- ("Bosnia and Herzegovina convertible mark"), -->
+      <xs:enumeration value="BBD"/>	<!-- ("Barbados dollar"), -->
+      <xs:enumeration value="BDT"/>	<!-- ("Bangladeshi taka"), -->
+      <xs:enumeration value="BGN"/>	<!-- ("Bulgarian lev"), -->
+      <xs:enumeration value="BHD"/>	<!-- ("Bahraini dinar"), -->
+      <xs:enumeration value="BIF"/>	<!-- ("Burundian franc"), -->
+      <xs:enumeration value="BMD"/>	<!-- ("Bermudian dollar"), -->
+      <xs:enumeration value="BND"/>	<!-- ("Brunei dollar"), -->
+      <xs:enumeration value="BOB"/>	<!-- ("Boliviano"), -->
+      <xs:enumeration value="BOV"/>	<!-- ("Bolivian Mvdol (funds code)"), -->
+      <xs:enumeration value="BRL"/>	<!-- ("Brazilian real"), -->
+      <xs:enumeration value="BSD"/>	<!-- ("Bahamian dollar"), -->
+      <xs:enumeration value="BTN"/>	<!-- ("Bhutanese ngultrum"), -->
+      <xs:enumeration value="BWP"/>	<!-- ("Botswana pula"), -->
+      <xs:enumeration value="BYN"/>	<!-- ("Belarusian ruble"), -->
+      <xs:enumeration value="BZD"/>	<!-- ("Belize dollar"), -->
+      <xs:enumeration value="CAD"/>	<!-- ("Canadian dollar"), -->
+      <xs:enumeration value="CDF"/>	<!-- ("Congolese franc"), -->
+      <xs:enumeration value="CHE"/>	<!-- ("WIR Euro (complementary currency)"), -->
+      <xs:enumeration value="CHF"/>	<!-- ("Swiss franc"), -->
+      <xs:enumeration value="CHW"/>	<!-- ("WIR Franc (complementary currency)"), -->
+      <xs:enumeration value="CLF"/>	<!-- ("Unidad de Fomento (funds code)"), -->
+      <xs:enumeration value="CLP"/>	<!-- ("Chilean peso"), -->
+      <xs:enumeration value="CNY"/>	<!-- ("Chinese yuan"), -->
+      <xs:enumeration value="COP"/>	<!-- ("Colombian peso"), -->
+      <xs:enumeration value="COU"/>	<!-- ("Unidad de Valor Real (UVR) (funds code)[7]"), -->
+      <xs:enumeration value="CRC"/>	<!-- ("Costa Rican colon"), -->
+      <xs:enumeration value="CUC"/>	<!-- ("Cuban convertible peso"), -->
+      <xs:enumeration value="CUP"/>	<!-- ("Cuban peso"), -->
+      <xs:enumeration value="CVE"/>	<!-- ("Cape Verde escudo"), -->
+      <xs:enumeration value="CZK"/>	<!-- ("Czech koruna"), -->
+      <xs:enumeration value="DJF"/>	<!-- ("Djiboutian franc"), -->
+      <xs:enumeration value="DKK"/>	<!-- ("Danish krone"), -->
+      <xs:enumeration value="DOP"/>	<!-- ("Dominican peso"), -->
+      <xs:enumeration value="DZD"/>	<!-- ("Algerian dinar"), -->
+      <xs:enumeration value="EGP"/>	<!-- ("Egyptian pound"), -->
+      <xs:enumeration value="ERN"/>	<!-- ("Eritrean nakfa"), -->
+      <xs:enumeration value="ETB"/>	<!-- ("Ethiopian birr"), -->
+      <xs:enumeration value="EUR"/>	<!-- ("Euro"), -->
+      <xs:enumeration value="FJD"/>	<!-- ("Fiji dollar"), -->
+      <xs:enumeration value="FKP"/>	<!-- ("Falkland Islands pound"), -->
+      <xs:enumeration value="GBP"/>	<!-- ("Pound sterling"), -->
+      <xs:enumeration value="GEL"/>	<!-- ("Georgian lari"), -->
+      <xs:enumeration value="GHS"/>	<!-- ("Ghanaian cedi"), -->
+      <xs:enumeration value="GIP"/>	<!-- ("Gibraltar pound"), -->
+      <xs:enumeration value="GMD"/>	<!-- ("Gambian dalasi"), -->
+      <xs:enumeration value="GNF"/>	<!-- ("Guinean franc"), -->
+      <xs:enumeration value="GTQ"/>	<!-- ("Guatemalan quetzal"), -->
+      <xs:enumeration value="GYD"/>	<!-- ("Guyanese dollar"), -->
+      <xs:enumeration value="HKD"/>	<!-- ("Hong Kong dollar"), -->
+      <xs:enumeration value="HNL"/>	<!-- ("Honduran lempira"), -->
+      <xs:enumeration value="HRK"/>	<!-- ("Croatian kuna"), -->
+      <xs:enumeration value="HTG"/>	<!-- ("Haitian gourde"), -->
+      <xs:enumeration value="HUF"/>	<!-- ("Hungarian forint"), -->
+      <xs:enumeration value="IDR"/>	<!-- ("Indonesian rupiah"), -->
+      <xs:enumeration value="ILS"/>	<!-- ("Israeli new shekel"), -->
+      <xs:enumeration value="INR"/>	<!-- ("Indian rupee"), -->
+      <xs:enumeration value="IQD"/>	<!-- ("Iraqi dinar"), -->
+      <xs:enumeration value="IRR"/>	<!-- ("Iranian rial"), -->
+      <xs:enumeration value="ISK"/>	<!-- ("Icelandic króna"), -->
+      <xs:enumeration value="JMD"/>	<!-- ("Jamaican dollar"), -->
+      <xs:enumeration value="JOD"/>	<!-- ("Jordanian dinar"), -->
+      <xs:enumeration value="JPY"/>	<!-- ("Japanese yen"), -->
+      <xs:enumeration value="KES"/>	<!-- ("Kenyan shilling"), -->
+      <xs:enumeration value="KGS"/>	<!-- ("Kyrgyzstani som"), -->
+      <xs:enumeration value="KHR"/>	<!-- ("Cambodian riel"), -->
+      <xs:enumeration value="KMF"/>	<!-- ("Comoro franc"), -->
+      <xs:enumeration value="KPW"/>	<!-- ("North Korean won"), -->
+      <xs:enumeration value="KRW"/>	<!-- ("South Korean won"), -->
+      <xs:enumeration value="KWD"/>	<!-- ("Kuwaiti dinar"), -->
+      <xs:enumeration value="KYD"/>	<!-- ("Cayman Islands dollar"), -->
+      <xs:enumeration value="KZT"/>	<!-- ("Kazakhstani tenge"), -->
+      <xs:enumeration value="LAK"/>	<!-- ("Lao kip"), -->
+      <xs:enumeration value="LBP"/>	<!-- ("Lebanese pound"), -->
+      <xs:enumeration value="LKR"/>	<!-- ("Sri Lankan rupee"), -->
+      <xs:enumeration value="LRD"/>	<!-- ("Liberian dollar"), -->
+      <xs:enumeration value="LSL"/>	<!-- ("Lesotho loti"), -->
+      <xs:enumeration value="LYD"/>	<!-- ("Libyan dinar"), -->
+      <xs:enumeration value="MAD"/>	<!-- ("Moroccan dirham"), -->
+      <xs:enumeration value="MDL"/>	<!-- ("Moldovan leu"), -->
+      <xs:enumeration value="MGA"/>	<!-- ("Malagasy ariary"), -->
+      <xs:enumeration value="MKD"/>	<!-- ("Macedonian denar"), -->
+      <xs:enumeration value="MMK"/>	<!-- ("Myanmar kyat"), -->
+      <xs:enumeration value="MNT"/>	<!-- ("Mongolian tögrög"), -->
+      <xs:enumeration value="MOP"/>	<!-- ("Macanese pataca"), -->
+      <xs:enumeration value="MRO"/>	<!-- ("Mauritanian ouguiya"), -->
+      <xs:enumeration value="MUR"/>	<!-- ("Mauritian rupee"), -->
+      <xs:enumeration value="MVR"/>	<!-- ("Maldivian rufiyaa"), -->
+      <xs:enumeration value="MWK"/>	<!-- ("Malawian kwacha"), -->
+      <xs:enumeration value="MXN"/>	<!-- ("Mexican peso"), -->
+      <xs:enumeration value="MXV"/>	<!-- ("Mexican Unidad de Inversion (UDI) (funds code)"), -->
+      <xs:enumeration value="MYR"/>	<!-- ("Malaysian ringgit"), -->
+      <xs:enumeration value="MZN"/>	<!-- ("Mozambican metical"), -->
+      <xs:enumeration value="NAD"/>	<!-- ("Namibian dollar"), -->
+      <xs:enumeration value="NGN"/>	<!-- ("Nigerian naira"), -->
+      <xs:enumeration value="NIO"/>	<!-- ("Nicaraguan córdoba"), -->
+      <xs:enumeration value="NOK"/>	<!-- ("Norwegian krone"), -->
+      <xs:enumeration value="NPR"/>	<!-- ("Nepalese rupee"), -->
+      <xs:enumeration value="NZD"/>	<!-- ("New Zealand dollar"), -->
+      <xs:enumeration value="OMR"/>	<!-- ("Omani rial"), -->
+      <xs:enumeration value="PAB"/>	<!-- ("Panamanian balboa"), -->
+      <xs:enumeration value="PEN"/>	<!-- ("Peruvian Sol"), -->
+      <xs:enumeration value="PGK"/>	<!-- ("Papua New Guinean kina"), -->
+      <xs:enumeration value="PHP"/>	<!-- ("Philippine peso"), -->
+      <xs:enumeration value="PKR"/>	<!-- ("Pakistani rupee"), -->
+      <xs:enumeration value="PLN"/>	<!-- ("Polish złoty"), -->
+      <xs:enumeration value="PYG"/>	<!-- ("Paraguayan guaraní"), -->
+      <xs:enumeration value="QAR"/>	<!-- ("Qatari riyal"), -->
+      <xs:enumeration value="RON"/>	<!-- ("Romanian leu"), -->
+      <xs:enumeration value="RSD"/>	<!-- ("Serbian dinar"), -->
+      <xs:enumeration value="RUB"/>	<!-- ("Russian ruble"), -->
+      <xs:enumeration value="RWF"/>	<!-- ("Rwandan franc"), -->
+      <xs:enumeration value="SAR"/>	<!-- ("Saudi riyal"), -->
+      <xs:enumeration value="SBD"/>	<!-- ("Solomon Islands dollar"), -->
+      <xs:enumeration value="SCR"/>	<!-- ("Seychelles rupee"), -->
+      <xs:enumeration value="SDG"/>	<!-- ("Sudanese pound"), -->
+      <xs:enumeration value="SEK"/>	<!-- ("Swedish krona/kronor"), -->
+      <xs:enumeration value="SGD"/>	<!-- ("Singapore dollar"), -->
+      <xs:enumeration value="SHP"/>	<!-- ("Saint Helena pound"), -->
+      <xs:enumeration value="SLL"/>	<!-- ("Sierra Leonean leone"), -->
+      <xs:enumeration value="SOS"/>	<!-- ("Somali shilling"), -->
+      <xs:enumeration value="SRD"/>	<!-- ("Surinamese dollar"), -->
+      <xs:enumeration value="SSP"/>	<!-- ("South Sudanese pound"), -->
+      <xs:enumeration value="STD"/>	<!-- ("São Tomé and Príncipe dobra"), -->
+      <xs:enumeration value="SVC"/>	<!-- ("Salvadoran colón"), -->
+      <xs:enumeration value="SYP"/>	<!-- ("Syrian pound"), -->
+      <xs:enumeration value="SZL"/>	<!-- ("Swazi lilangeni"), -->
+      <xs:enumeration value="THB"/>	<!-- ("Thai baht"), -->
+      <xs:enumeration value="TJS"/>	<!-- ("Tajikistani somoni"), -->
+      <xs:enumeration value="TMT"/>	<!-- ("Turkmenistani manat"), -->
+      <xs:enumeration value="TND"/>	<!-- ("Tunisian dinar"), -->
+      <xs:enumeration value="TOP"/>	<!-- ("Tongan paʻanga"), -->
+      <xs:enumeration value="TRY"/>	<!-- ("Turkish lira"), -->
+      <xs:enumeration value="TTD"/>	<!-- ("Trinidad and Tobago dollar"), -->
+      <xs:enumeration value="TWD"/>	<!-- ("New Taiwan dollar"), -->
+      <xs:enumeration value="TZS"/>	<!-- ("Tanzanian shilling"), -->
+      <xs:enumeration value="UAH"/>	<!-- ("Ukrainian hryvnia"), -->
+      <xs:enumeration value="UGX"/>	<!-- ("Ugandan shilling"), -->
+      <xs:enumeration value="USD"/>	<!-- ("United States dollar"), -->
+      <xs:enumeration value="USN"/>	<!-- ("United States dollar (next day) (funds code)"), -->
+      <xs:enumeration value="UYI"/>	<!-- ("Uruguay Peso en Unidades Indexadas (URUIURUI) (funds code)"), -->
+      <xs:enumeration value="UYU"/>	<!-- ("Uruguayan peso"), -->
+      <xs:enumeration value="UZS"/>	<!-- ("Uzbekistan som"), -->
+      <xs:enumeration value="VEF"/>	<!-- ("Venezuelan bolívar"), -->
+      <xs:enumeration value="VND"/>	<!-- ("Vietnamese đồng"), -->
+      <xs:enumeration value="VUV"/>	<!-- ("Vanuatu vatu"), -->
+      <xs:enumeration value="WST"/>	<!-- ("Samoan tala"), -->
+      <xs:enumeration value="XAF"/>	<!-- ("CFA franc BEAC"), -->
+      <xs:enumeration value="XAG"/>	<!-- ("Silver (one troy ounce)"), -->
+      <xs:enumeration value="XAU"/>	<!-- ("Gold (one troy ounce)"), -->
+      <xs:enumeration value="XBA"/>	<!-- ("European Composite Unit (EURCO) (bond market unit)"), -->
+      <xs:enumeration value="XBB"/>	<!-- ("European Monetary Unit (E.M.U.-6) (bond market unit)"), -->
+      <xs:enumeration value="XBC"/>	<!-- ("European Unit of Account 9 (E.U.A.-9) (bond market unit)"), -->
+      <xs:enumeration value="XBD"/>	<!-- ("European Unit of Account 17 (E.U.A.-17) (bond market unit)"), -->
+      <xs:enumeration value="XCD"/>	<!-- ("East Caribbean dollar"), -->
+      <xs:enumeration value="XDR"/>	<!-- ("Special drawing rights"), -->
+      <xs:enumeration value="XOF"/>	<!-- ("CFA franc BCEAO"), -->
+      <xs:enumeration value="XPD"/>	<!-- ("Palladium (one troy ounce)"), -->
+      <xs:enumeration value="XPF"/>	<!-- ("CFP franc (franc Pacifique)"), -->
+      <xs:enumeration value="XPT"/>	<!-- ("Platinum (one troy ounce)"), -->
+      <xs:enumeration value="XSU"/>	<!-- ("SUCRE"), -->
+      <xs:enumeration value="XTS"/>	<!-- ("Code reserved for testing purposes"), -->
+      <xs:enumeration value="XUA"/>	<!-- ("ADB Unit of Account"), -->
+      <xs:enumeration value="XXX"/>	<!-- ("No currency"), -->
+      <xs:enumeration value="YER"/>	<!-- ("Yemeni rial"), -->
+      <xs:enumeration value="ZAR"/>	<!-- ("South African rand"), -->
+      <xs:enumeration value="ZMW"/>	<!-- ("Zambian kwacha"), -->
+      <xs:enumeration value="ZWL"/>	<!-- ("Zimbabwean dollar A/10"), -->
+      <xs:enumeration value="ZWD"/>	<!-- ("Zimbabwean Dollar"), -->
+      <xs:enumeration value="SPL"/>	<!-- ("Seborgan Luigino"), -->
+      <xs:enumeration value="JEP"/>	<!-- ("Jersey Pound"), -->
+      <xs:enumeration value="TVD"/>	<!-- ("Tuvaluan Dollar"), -->
+      <xs:enumeration value="IMP"/>	<!-- ("Isle of Man Pound"), -->
+      <xs:enumeration value="BYR"/>
+      <xs:enumeration value="EEK"/>
+      <xs:enumeration value="GGP"/>
+      <xs:enumeration value="LTL"/>
+      <xs:enumeration value="LVL"/>
+      <xs:enumeration value="ZMK"/>
+      <xs:enumeration value="MZM"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ContainerTypeCode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="20A0"/>			<!-- 20 Air/Surface (20A0) -->
+      <xs:enumeration value="20B0"/>			<!-- 20 Dry Bulk (20B0) -->
+      <xs:enumeration value="20B1"/>			<!-- 20 Dry Bulk (20B1) -->
+      <xs:enumeration value="20B2"/>			<!-- 20 Dry Bulk (20B2) -->
+      <xs:enumeration value="20B3"/>			<!-- 20 Dry Bulk (20B3) -->
+      <xs:enumeration value="20B4"/>			<!-- 20 Dry Bulk (20B4) -->
+      <xs:enumeration value="20B5"/>			<!-- 20 Dry Bulk (20B5) -->
+      <xs:enumeration value="20B6"/>			<!-- 20 Dry Bulk (20B6) -->
+      <xs:enumeration value="20B7"/>			<!-- 20 Dry Bulk (20B7) -->
+      <xs:enumeration value="20B8"/>			<!-- 20 Dry Bulk (20B8) -->
+      <xs:enumeration value="20B9"/>			<!-- 20 Dry Bulk (20B9) -->
+      <xs:enumeration value="20G0"/>			<!-- 20 General Purpose (20G0) -->
+      <xs:enumeration value="20G1"/>			<!-- 20 General Purpose (20G1) -->
+      <xs:enumeration value="20G2"/>			<!-- 20 General Purpose (20G2) -->
+      <xs:enumeration value="20G3"/>			<!-- 20 General Purpose (20G3) -->
+      <xs:enumeration value="20G4"/>			<!-- 20 General Purpose (20G4) -->
+      <xs:enumeration value="20G5"/>			<!-- 20 General Purpose (20G5) -->
+      <xs:enumeration value="20G6"/>			<!-- 20 General Purpose (20G6) -->
+      <xs:enumeration value="20G7"/>			<!-- 20 General Purpose (20G7) -->
+      <xs:enumeration value="20G8"/>			<!-- 20 General Purpose (20G8) -->
+      <xs:enumeration value="20G9"/>			<!-- 20 General Purpose (20G9) -->
+      <xs:enumeration value="20H0"/>			<!-- 20 Thermal (20H0) -->
+      <xs:enumeration value="20H1"/>			<!-- 20 Thermal (20H1) -->
+      <xs:enumeration value="20H2"/>			<!-- 20 Thermal (20H2) -->
+      <xs:enumeration value="20H3"/>			<!-- 20 Thermal (20H3) -->
+      <xs:enumeration value="20H4"/>			<!-- 20 Thermal (20H4) -->
+      <xs:enumeration value="20H5"/>			<!-- 20 Thermal (20H5) -->
+      <xs:enumeration value="20H6"/>			<!-- 20 Thermal (20H6) -->
+      <xs:enumeration value="20H7"/>			<!-- 20 Thermal (20H7) -->
+      <xs:enumeration value="20H8"/>			<!-- 20 Thermal (20H8) -->
+      <xs:enumeration value="20H9"/>			<!-- 20 Thermal (20H9) -->
+      <xs:enumeration value="20P0"/>			<!-- 20 Platform (20P0) -->
+      <xs:enumeration value="20P1"/>			<!-- 20 Platform (20P1) -->
+      <xs:enumeration value="20P2"/>			<!-- 20 Platform (20P2) -->
+      <xs:enumeration value="20P3"/>			<!-- 20 Platform (20P3) -->
+      <xs:enumeration value="20P4"/>			<!-- 20 Platform (20P4) -->
+      <xs:enumeration value="20P5"/>			<!-- 20 Platform (20P5) -->
+      <xs:enumeration value="20P6"/>			<!-- 20 Platform (20P6) -->
+      <xs:enumeration value="20P7"/>			<!-- 20 Platform (20P7) -->
+      <xs:enumeration value="20P8"/>			<!-- 20 Platform (20P8) -->
+      <xs:enumeration value="20P9"/>			<!-- 20 Platform (20P9) -->
+      <xs:enumeration value="20R0"/>			<!-- 20 Refrigerated (20R0) -->
+      <xs:enumeration value="20R1"/>			<!-- 20 Refrigerated (20R1) -->
+      <xs:enumeration value="20R2"/>			<!-- 20 Refrigerated (20R2) -->
+      <xs:enumeration value="20R3"/>			<!-- 20 Refrigerated (20R3) -->
+      <xs:enumeration value="20R4"/>			<!-- 20 Refrigerated (20R4) -->
+      <xs:enumeration value="20R5"/>			<!-- 20 Refrigerated (20R5) -->
+      <xs:enumeration value="20R6"/>			<!-- 20 Refrigerated (20R6) -->
+      <xs:enumeration value="20R7"/>			<!-- 20 Refrigerated (20R7) -->
+      <xs:enumeration value="20R8"/>			<!-- 20 Refrigerated (20R8) -->
+      <xs:enumeration value="20R9"/>			<!-- 20 Refrigerated (20R9) -->
+      <xs:enumeration value="20S0"/>			<!-- 20 Named Cargo (20S0) -->
+      <xs:enumeration value="20S1"/>			<!-- 20 Named Cargo (20S1) -->
+      <xs:enumeration value="20S2"/>			<!-- 20 Named Cargo (20S2) -->
+      <xs:enumeration value="20S3"/>			<!-- 20 Named Cargo (20S3) -->
+      <xs:enumeration value="20S4"/>			<!-- 20 Named Cargo (20S4) -->
+      <xs:enumeration value="20S5"/>			<!-- 20 Named Cargo (20S5) -->
+      <xs:enumeration value="20S6"/>			<!-- 20 Named Cargo (20S6) -->
+      <xs:enumeration value="20S7"/>			<!-- 20 Named Cargo (20S7) -->
+      <xs:enumeration value="20S8"/>			<!-- 20 Named Cargo (20S8) -->
+      <xs:enumeration value="20S9"/>			<!-- 20 Named Cargo (20S9) -->
+      <xs:enumeration value="20T0"/>			<!-- 20 Tank (20T0) -->
+      <xs:enumeration value="20T1"/>			<!-- 20 Tank (20T1) -->
+      <xs:enumeration value="20T2"/>			<!-- 20 Tank (20T2) -->
+      <xs:enumeration value="20T3"/>			<!-- 20 Tank (20T3) -->
+      <xs:enumeration value="20T4"/>			<!-- 20 Tank (20T4) -->
+      <xs:enumeration value="20T5"/>			<!-- 20 Tank (DGS - 4 bar) (20T5) -->
+      <xs:enumeration value="20T6"/>			<!-- 20 Tank (20T6) -->
+      <xs:enumeration value="20T7"/>			<!-- 20 Tank (20T7) -->
+      <xs:enumeration value="20T8"/>			<!-- 20 Tank (20T8) -->
+      <xs:enumeration value="20T9"/>			<!-- 20 Tank (20T9) -->
+      <xs:enumeration value="20U0"/>			<!-- 20 Open Top (20U0) -->
+      <xs:enumeration value="20U1"/>			<!-- 20 Open Top (20U1) -->
+      <xs:enumeration value="20U2"/>			<!-- 20 Open Top (20U2) -->
+      <xs:enumeration value="20U3"/>			<!-- 20 Open Top (20U3) -->
+      <xs:enumeration value="20U4"/>			<!-- 20 Open Top (20U4) -->
+      <xs:enumeration value="20U5"/>			<!-- 20 Open Top (20U5) -->
+      <xs:enumeration value="20U6"/>			<!-- 20 Open Top (20U6) -->
+      <xs:enumeration value="20U7"/>			<!-- 20 Open Top (20U7) -->
+      <xs:enumeration value="20U8"/>			<!-- 20 Open Top (20U8) -->
+      <xs:enumeration value="20U9"/>			<!-- 20 Open Top (20U9) -->
+      <xs:enumeration value="20V0"/>			<!-- 20 Ventilated (20V0) -->
+      <xs:enumeration value="20V1"/>			<!-- 20 Ventilated (20V1) -->
+      <xs:enumeration value="20V2"/>			<!-- 20 Ventilated (20V2) -->
+      <xs:enumeration value="20V3"/>			<!-- 20 Ventilated (20V3) -->
+      <xs:enumeration value="20V4"/>			<!-- 20 Ventilated (20V4) -->
+      <xs:enumeration value="20V5"/>			<!-- 20 Ventilated (20V5) -->
+      <xs:enumeration value="20V6"/>			<!-- 20 Ventilated (20V6) -->
+      <xs:enumeration value="20V7"/>			<!-- 20 Ventilated (20V7) -->
+      <xs:enumeration value="20V8"/>			<!-- 20 Ventilated (20V8) -->
+      <xs:enumeration value="20V9"/>			<!-- 20 Ventilated (20V9) -->
+      <xs:enumeration value="22A0"/>			<!-- 20 Air/Surface (22A0) -->
+      <xs:enumeration value="22B0"/>			<!-- 20 Dry Bulk (22B0) -->
+      <xs:enumeration value="22B1"/>			<!-- 20 Dry Bulk (22B1) -->
+      <xs:enumeration value="22B2"/>			<!-- 20 Dry Bulk (22B2) -->
+      <xs:enumeration value="22B3"/>			<!-- 20 Dry Bulk (22B3) -->
+      <xs:enumeration value="22B4"/>			<!-- 20 Dry Bulk (22B4) -->
+      <xs:enumeration value="22B5"/>			<!-- 20 Dry Bulk (22B5) -->
+      <xs:enumeration value="22B6"/>			<!-- 20 Dry Bulk (22B6) -->
+      <xs:enumeration value="22B7"/>			<!-- 20 Dry Bulk (22B7) -->
+      <xs:enumeration value="22B8"/>			<!-- 20 Dry Bulk (22B8) -->
+      <xs:enumeration value="22B9"/>			<!-- 20 Dry Bulk (22B9) -->
+      <xs:enumeration value="22G0"/>			<!-- 20 Standard Dry (22G0) -->
+      <xs:enumeration value="22G1"/>			<!-- 20 General Purpose (22G1) -->
+      <xs:enumeration value="22G2"/>			<!-- 20 General Purpose (22G2) -->
+      <xs:enumeration value="22G3"/>			<!-- 20 General Purpose (22G3) -->
+      <xs:enumeration value="22G4"/>			<!-- 20 General Purpose (22G4) -->
+      <xs:enumeration value="22G5"/>			<!-- 20 General Purpose (22G5) -->
+      <xs:enumeration value="22G6"/>			<!-- 20 General Purpose (22G6) -->
+      <xs:enumeration value="22G7"/>			<!-- 20 General Purpose (22G7) -->
+      <xs:enumeration value="22G8"/>			<!-- 20 General Purpose (22G8) -->
+      <xs:enumeration value="22G9"/>			<!-- 20 General Purpose (22G9) -->
+      <xs:enumeration value="22H0"/>			<!-- 20 Insulated (22H0) -->
+      <xs:enumeration value="22H1"/>			<!-- 20 Thermal (22H1) -->
+      <xs:enumeration value="22H2"/>			<!-- 20 Thermal (22H2) -->
+      <xs:enumeration value="22H3"/>			<!-- 20 Thermal (22H3) -->
+      <xs:enumeration value="22H4"/>			<!-- 20 Thermal (22H4) -->
+      <xs:enumeration value="22H5"/>			<!-- 20 Thermal (22H5) -->
+      <xs:enumeration value="22H6"/>			<!-- 20 Thermal (22H6) -->
+      <xs:enumeration value="22H7"/>			<!-- 20 Thermal (22H7) -->
+      <xs:enumeration value="22H8"/>			<!-- 20 Thermal (22H8) -->
+      <xs:enumeration value="22H9"/>			<!-- 20 Thermal (22H9) -->
+      <xs:enumeration value="22P0"/>			<!-- 20 Platform (22P0) -->
+      <xs:enumeration value="22P1"/>			<!-- 20 Flat Rack (22P1) -->
+      <xs:enumeration value="22P2"/>			<!-- 20 Platform (22P2) -->
+      <xs:enumeration value="22P3"/>			<!-- 20 Platform (collapsible) (22PC) -->
+      <xs:enumeration value="22P4"/>			<!-- 20 Platform (22P4) -->
+      <xs:enumeration value="22P5"/>			<!-- 20 Platform (22P5) -->
+      <xs:enumeration value="22P6"/>			<!-- 20 Platform (22P6) -->
+      <xs:enumeration value="22P7"/>			<!-- 20 Platform (22P7) -->
+      <xs:enumeration value="22P8"/>			<!-- 20 Platform (22P8) -->
+      <xs:enumeration value="22P9"/>			<!-- 20 Platform (22P9) -->
+      <xs:enumeration value="22R0"/>			<!-- 20 Refrigerated (22R0) -->
+      <xs:enumeration value="22R1"/>			<!-- 20 Reefer (22R1) -->
+      <xs:enumeration value="22R2"/>			<!-- 20 Refrigerated (22R2) -->
+      <xs:enumeration value="22R3"/>			<!-- 20 Refrigerated (22R3) -->
+      <xs:enumeration value="22R4"/>			<!-- 20 Refrigerated (22R4) -->
+      <xs:enumeration value="22R5"/>			<!-- 20 Refrigerated (22R5) -->
+      <xs:enumeration value="22R6"/>			<!-- 20 Refrigerated (22R6) -->
+      <xs:enumeration value="22R7"/>			<!-- 20 Refrigerated (22R7) -->
+      <xs:enumeration value="22R8"/>			<!-- 20 Refrigerated (22R8) -->
+      <xs:enumeration value="22R9"/>			<!-- 20 Reefer (non food) (22R9) -->
+      <xs:enumeration value="22S0"/>			<!-- 20 Named Cargo (22S0) -->
+      <xs:enumeration value="22S1"/>			<!-- 20 Named Cargo (22S1) -->
+      <xs:enumeration value="22S2"/>			<!-- 20 Named Cargo (22S2) -->
+      <xs:enumeration value="22S3"/>			<!-- 20 Named Cargo (22S3) -->
+      <xs:enumeration value="22S4"/>			<!-- 20 Named Cargo (22S4) -->
+      <xs:enumeration value="22S5"/>			<!-- 20 Named Cargo (22S5) -->
+      <xs:enumeration value="22S6"/>			<!-- 20 Named Cargo (22S6) -->
+      <xs:enumeration value="22S7"/>			<!-- 20 Named Cargo (22S7) -->
+      <xs:enumeration value="22S8"/>			<!-- 20 Named Cargo (22S8) -->
+      <xs:enumeration value="22S9"/>			<!-- 20 Named Cargo (22S9) -->
+      <xs:enumeration value="22T0"/>			<!-- 20 Tank (non-dangerous) (22T0) -->
+      <xs:enumeration value="22T1"/>			<!-- 20 Tank (22T1) -->
+      <xs:enumeration value="22T2"/>			<!-- 20 Tank (22T2) -->
+      <xs:enumeration value="22T3"/>			<!-- 20 Tank (22T3) -->
+      <xs:enumeration value="22T4"/>			<!-- 20 Tank (22T4) -->
+      <xs:enumeration value="22T5"/>			<!-- 20 Tank (DGS - 4 bar) (22T5) -->
+      <xs:enumeration value="22T6"/>			<!-- 20 Tank (dangerous - 6 bar) (22T6) -->
+      <xs:enumeration value="22T7"/>			<!-- 20 Tank (22T7) -->
+      <xs:enumeration value="22T8"/>			<!-- 20 Tank (22T8) -->
+      <xs:enumeration value="22T9"/>			<!-- 20 Tank (22T9) -->
+      <xs:enumeration value="22U0"/>			<!-- 20 Open Top (22U0) -->
+      <xs:enumeration value="22U1"/>			<!-- 20 Open Top (22U1) -->
+      <xs:enumeration value="22U2"/>			<!-- 20 Open Top (22U2) -->
+      <xs:enumeration value="22U3"/>			<!-- 20 Open Top (22U3) -->
+      <xs:enumeration value="22U4"/>			<!-- 20 Open Top (22U4) -->
+      <xs:enumeration value="22U5"/>			<!-- 20 Open Top (22U5) -->
+      <xs:enumeration value="22U6"/>			<!-- 20 Hard Top (22U6) -->
+      <xs:enumeration value="22U7"/>			<!-- 20 Open Top (22U7) -->
+      <xs:enumeration value="22U8"/>			<!-- 20 Open Top (22U8) -->
+      <xs:enumeration value="22U9"/>			<!-- 20 Open Top (22U9) -->
+      <xs:enumeration value="22V0"/>			<!-- 20 Ventilated (22V0) -->
+      <xs:enumeration value="22V1"/>			<!-- 20 Ventilated (22V1) -->
+      <xs:enumeration value="22V2"/>			<!-- 20 Ventilated (22V2) -->
+      <xs:enumeration value="22V3"/>			<!-- 20 Ventilated (22V3) -->
+      <xs:enumeration value="22V4"/>			<!-- 20 Ventilated (22V4) -->
+      <xs:enumeration value="22V5"/>			<!-- 20 Ventilated (22V5) -->
+      <xs:enumeration value="22V6"/>			<!-- 20 Ventilated (22V6) -->
+      <xs:enumeration value="22V7"/>			<!-- 20 Ventilated (22V7) -->
+      <xs:enumeration value="22V8"/>			<!-- 20 Ventilated (22V8) -->
+      <xs:enumeration value="22V9"/>			<!-- 20 Ventilated (22V9) -->
+      <xs:enumeration value="24A0"/>			<!-- 20 High Cube Air/Surface (24A0) -->
+      <xs:enumeration value="24B0"/>			<!-- 20 High Cube Dry Bulk (24B0) -->
+      <xs:enumeration value="24B1"/>			<!-- 20 High Cube Dry Bulk (24B1) -->
+      <xs:enumeration value="24B2"/>			<!-- 20 High Cube Dry Bulk (24B2) -->
+      <xs:enumeration value="24B3"/>			<!-- 20 High Cube Dry Bulk (24B3) -->
+      <xs:enumeration value="24B4"/>			<!-- 20 High Cube Dry Bulk (24B4) -->
+      <xs:enumeration value="24B5"/>			<!-- 20 High Cube Dry Bulk (24B5) -->
+      <xs:enumeration value="24B6"/>			<!-- 20 High Cube Dry Bulk (24B6) -->
+      <xs:enumeration value="24B7"/>			<!-- 20 High Cube Dry Bulk (24B7) -->
+      <xs:enumeration value="24B8"/>			<!-- 20 High Cube Dry Bulk (24B8) -->
+      <xs:enumeration value="24B9"/>			<!-- 20 High Cube Dry Bulk (24B9) -->
+      <xs:enumeration value="24G0"/>			<!-- 20 High Cube General Purpose (24G0) -->
+      <xs:enumeration value="24G1"/>			<!-- 20 High Cube General Purpose (24G1) -->
+      <xs:enumeration value="24G2"/>			<!-- 20 High Cube General Purpose (24G2) -->
+      <xs:enumeration value="24G3"/>			<!-- 20 High Cube General Purpose (24G3) -->
+      <xs:enumeration value="24G4"/>			<!-- 20 High Cube General Purpose (24G4) -->
+      <xs:enumeration value="24G5"/>			<!-- 20 High Cube General Purpose (24G5) -->
+      <xs:enumeration value="24G6"/>			<!-- 20 High Cube General Purpose (24G6) -->
+      <xs:enumeration value="24G7"/>			<!-- 20 High Cube General Purpose (24G7) -->
+      <xs:enumeration value="24G8"/>			<!-- 20 High Cube General Purpose (24G8) -->
+      <xs:enumeration value="24G9"/>			<!-- 20 High Cube General Purpose (24G9) -->
+      <xs:enumeration value="24H0"/>			<!-- 20 High Cube Thermal (24H0) -->
+      <xs:enumeration value="24H1"/>			<!-- 20 High Cube Thermal (24H1) -->
+      <xs:enumeration value="24H2"/>			<!-- 20 High Cube Thermal (24H2) -->
+      <xs:enumeration value="24H3"/>			<!-- 20 High Cube Thermal (24H3) -->
+      <xs:enumeration value="24H4"/>			<!-- 20 High Cube Thermal (24H4) -->
+      <xs:enumeration value="24H5"/>			<!-- 20 High Cube Thermal (24H5) -->
+      <xs:enumeration value="24H6"/>			<!-- 20 High Cube Thermal (24H6) -->
+      <xs:enumeration value="24H7"/>			<!-- 20 High Cube Thermal (24H7) -->
+      <xs:enumeration value="24H8"/>			<!-- 20 High Cube Thermal (24H8) -->
+      <xs:enumeration value="24H9"/>			<!-- 20 High Cube Thermal (24H9) -->
+      <xs:enumeration value="24P0"/>			<!-- 20 High Cube Platform (24P0) -->
+      <xs:enumeration value="24P1"/>			<!-- 20 High Cube Platform (24P1) -->
+      <xs:enumeration value="24P2"/>			<!-- 20 High Cube Platform (24P2) -->
+      <xs:enumeration value="24P3"/>			<!-- 20 High Cube Platform (24P3) -->
+      <xs:enumeration value="24P4"/>			<!-- 20 High Cube Platform (24P4) -->
+      <xs:enumeration value="24P5"/>			<!-- 20 High Cube Platform (24P5) -->
+      <xs:enumeration value="24P6"/>			<!-- 20 High Cube Platform (24P6) -->
+      <xs:enumeration value="24P7"/>			<!-- 20 High Cube Platform (24P7) -->
+      <xs:enumeration value="24P8"/>			<!-- 20 High Cube Platform (24P8) -->
+      <xs:enumeration value="24P9"/>			<!-- 20 High Cube Platform (24P9) -->
+      <xs:enumeration value="24R0"/>			<!-- 20 High Cube Refrigerated (24R0) -->
+      <xs:enumeration value="24R1"/>			<!-- 20 High Cube Refrigerated (24R1) -->
+      <xs:enumeration value="24R2"/>			<!-- 20 High Cube Refrigerated (24R2) -->
+      <xs:enumeration value="24R3"/>			<!-- 20 High Cube Refrigerated (24R3) -->
+      <xs:enumeration value="24R4"/>			<!-- 20 High Cube Refrigerated (24R4) -->
+      <xs:enumeration value="24R5"/>			<!-- 20 High Cube Refrigerated (24R5) -->
+      <xs:enumeration value="24R6"/>			<!-- 20 High Cube Refrigerated (24R6) -->
+      <xs:enumeration value="24R7"/>			<!-- 20 High Cube Refrigerated (24R7) -->
+      <xs:enumeration value="24R8"/>			<!-- 20 High Cube Refrigerated (24R8) -->
+      <xs:enumeration value="24R9"/>			<!-- 20 High Cube Refrigerated (24R9) -->
+      <xs:enumeration value="24S0"/>			<!-- 20 High Cube Named Cargo (24S0) -->
+      <xs:enumeration value="24S1"/>			<!-- 20 High Cube Named Cargo (24S1) -->
+      <xs:enumeration value="24S2"/>			<!-- 20 High Cube Named Cargo (24S2) -->
+      <xs:enumeration value="24S3"/>			<!-- 20 High Cube Named Cargo (24S3) -->
+      <xs:enumeration value="24S4"/>			<!-- 20 High Cube Named Cargo (24S4) -->
+      <xs:enumeration value="24S5"/>			<!-- 20 High Cube Named Cargo (24S5) -->
+      <xs:enumeration value="24S6"/>			<!-- 20 High Cube Named Cargo (24S6) -->
+      <xs:enumeration value="24S7"/>			<!-- 20 High Cube Named Cargo (24S7) -->
+      <xs:enumeration value="24S8"/>			<!-- 20 High Cube Named Cargo (24S8) -->
+      <xs:enumeration value="24S9"/>			<!-- 20 High Cube Named Cargo (24S9) -->
+      <xs:enumeration value="24T0"/>			<!-- 20 High Cube Tank (24T0) -->
+      <xs:enumeration value="24T1"/>			<!-- 20 High Cube Tank (24T1) -->
+      <xs:enumeration value="24T2"/>			<!-- 20 High Cube Tank (24T2) -->
+      <xs:enumeration value="24T3"/>			<!-- 20 High Cube Tank (24T3) -->
+      <xs:enumeration value="24T4"/>			<!-- 20 High Cube Tank (24T4) -->
+      <xs:enumeration value="24T5"/>			<!-- 20 High Cube Tank (24T5) -->
+      <xs:enumeration value="24T6"/>			<!-- 20 High Cube Tank (24T6) -->
+      <xs:enumeration value="24T7"/>			<!-- 20 High Cube Tank (24T7) -->
+      <xs:enumeration value="24T8"/>			<!-- 20 High Cube Tank (24T8) -->
+      <xs:enumeration value="24T9"/>			<!-- 20 High Cube Tank (24T9) -->
+      <xs:enumeration value="24U0"/>			<!-- 20 High Cube Open Top (24U0) -->
+      <xs:enumeration value="24U1"/>			<!-- 20 High Cube Open Top (24U1) -->
+      <xs:enumeration value="24U2"/>			<!-- 20 High Cube Open Top (24U2) -->
+      <xs:enumeration value="24U3"/>			<!-- 20 High Cube Open Top (24U3) -->
+      <xs:enumeration value="24U4"/>			<!-- 20 High Cube Open Top (24U4) -->
+      <xs:enumeration value="24U5"/>			<!-- 20 High Cube Open Top (24U5) -->
+      <xs:enumeration value="24U6"/>			<!-- 20 High Cube Open Top (24U6) -->
+      <xs:enumeration value="24U7"/>			<!-- 20 High Cube Open Top (24U7) -->
+      <xs:enumeration value="24U8"/>			<!-- 20 High Cube Open Top (24U8) -->
+      <xs:enumeration value="24U9"/>			<!-- 20 High Cube Open Top (24U9) -->
+      <xs:enumeration value="24V0"/>			<!-- 20 High Cube Ventilated (24V0) -->
+      <xs:enumeration value="24V1"/>			<!-- 20 High Cube Ventilated (24V1) -->
+      <xs:enumeration value="24V2"/>			<!-- 20 High Cube Ventilated (24V2) -->
+      <xs:enumeration value="24V3"/>			<!-- 20 High Cube Ventilated (24V3) -->
+      <xs:enumeration value="24V4"/>			<!-- 20 High Cube Ventilated (24V4) -->
+      <xs:enumeration value="24V5"/>			<!-- 20 High Cube Ventilated (24V5) -->
+      <xs:enumeration value="24V6"/>			<!-- 20 High Cube Ventilated (24V6) -->
+      <xs:enumeration value="24V7"/>			<!-- 20 High Cube Ventilated (24V7) -->
+      <xs:enumeration value="24V8"/>			<!-- 20 High Cube Ventilated (24V8) -->
+      <xs:enumeration value="24V9"/>			<!-- 20 High Cube Ventilated (24V9) -->
+      <xs:enumeration value="25A0"/>			<!-- 20 High Cube Air/Surface (25A0) -->
+      <xs:enumeration value="25B0"/>			<!-- 20 High Cube Dry Bulk (25B0) -->
+      <xs:enumeration value="25B1"/>			<!-- 20 High Cube Dry Bulk (25B1) -->
+      <xs:enumeration value="25B2"/>			<!-- 20 High Cube Dry Bulk (25B2) -->
+      <xs:enumeration value="25B3"/>			<!-- 20 High Cube Dry Bulk (25B3) -->
+      <xs:enumeration value="25B4"/>			<!-- 20 High Cube Dry Bulk (25B4) -->
+      <xs:enumeration value="25B5"/>			<!-- 20 High Cube Dry Bulk (25B5) -->
+      <xs:enumeration value="25B6"/>			<!-- 20 High Cube Dry Bulk (25B6) -->
+      <xs:enumeration value="25B7"/>			<!-- 20 High Cube Dry Bulk (25B7) -->
+      <xs:enumeration value="25B8"/>			<!-- 20 High Cube Dry Bulk (25B8) -->
+      <xs:enumeration value="25B9"/>			<!-- 20 High Cube Dry Bulk (25B9) -->
+      <xs:enumeration value="25G0"/>			<!-- 20 High Cube (25G0) -->
+      <xs:enumeration value="25G1"/>			<!-- 20 High Cube General Purpose (25G1) -->
+      <xs:enumeration value="25G2"/>			<!-- 20 High Cube General Purpose (25G2) -->
+      <xs:enumeration value="25G3"/>			<!-- 20 High Cube General Purpose (25G3) -->
+      <xs:enumeration value="25G4"/>			<!-- 20 High Cube General Purpose (25G4) -->
+      <xs:enumeration value="25G5"/>			<!-- 20 High Cube General Purpose (25G5) -->
+      <xs:enumeration value="25G6"/>			<!-- 20 High Cube General Purpose (25G6) -->
+      <xs:enumeration value="25G7"/>			<!-- 20 High Cube General Purpose (25G7) -->
+      <xs:enumeration value="25G8"/>			<!-- 20 High Cube General Purpose (25G8) -->
+      <xs:enumeration value="25G9"/>			<!-- 20 High Cube General Purpose (25G9) -->
+      <xs:enumeration value="25H0"/>			<!-- 20 High Cube Thermal (25H0) -->
+      <xs:enumeration value="25H1"/>			<!-- 20 High Cube Thermal (25H1) -->
+      <xs:enumeration value="25H2"/>			<!-- 20 High Cube Thermal (25H2) -->
+      <xs:enumeration value="25H3"/>			<!-- 20 High Cube Thermal (25H3) -->
+      <xs:enumeration value="25H4"/>			<!-- 20 High Cube Thermal (25H4) -->
+      <xs:enumeration value="25H5"/>			<!-- 20 High Cube Thermal (25H5) -->
+      <xs:enumeration value="25H6"/>			<!-- 20 High Cube Thermal (25H6) -->
+      <xs:enumeration value="25H7"/>			<!-- 20 High Cube Thermal (25H7) -->
+      <xs:enumeration value="25H8"/>			<!-- 20 High Cube Thermal (25H8) -->
+      <xs:enumeration value="25H9"/>			<!-- 20 High Cube Thermal (25H9) -->
+      <xs:enumeration value="25P0"/>			<!-- 20 High Cube Platform (25P0) -->
+      <xs:enumeration value="25P1"/>			<!-- 20 High Cube Platform (25P1) -->
+      <xs:enumeration value="25P2"/>			<!-- 20 High Cube Platform (25P2) -->
+      <xs:enumeration value="25P3"/>			<!-- 20 High Cube Platform (25P3) -->
+      <xs:enumeration value="25P4"/>			<!-- 20 High Cube Platform (25P4) -->
+      <xs:enumeration value="25P5"/>			<!-- 20 High Cube Platform (25P5) -->
+      <xs:enumeration value="25P6"/>			<!-- 20 High Cube Platform (25P6) -->
+      <xs:enumeration value="25P7"/>			<!-- 20 High Cube Platform (25P7) -->
+      <xs:enumeration value="25P8"/>			<!-- 20 High Cube Platform (25P8) -->
+      <xs:enumeration value="25P9"/>			<!-- 20 High Cube Platform (25P9) -->
+      <xs:enumeration value="25R0"/>			<!-- 20 High Cube Refrigerated (25R0) -->
+      <xs:enumeration value="25R1"/>			<!-- 20 Reefer High Cube (25R1) -->
+      <xs:enumeration value="25R2"/>			<!-- 20 High Cube Refrigerated (25R2) -->
+      <xs:enumeration value="25R3"/>			<!-- 20 High Cube Refrigerated (25R3) -->
+      <xs:enumeration value="25R4"/>			<!-- 20 High Cube Refrigerated (25R4) -->
+      <xs:enumeration value="25R5"/>			<!-- 20 High Cube Refrigerated (25R5) -->
+      <xs:enumeration value="25R6"/>			<!-- 20 High Cube Refrigerated (25R6) -->
+      <xs:enumeration value="25R7"/>			<!-- 20 High Cube Refrigerated (25R7) -->
+      <xs:enumeration value="25R8"/>			<!-- 20 High Cube Refrigerated (25R8) -->
+      <xs:enumeration value="25R9"/>			<!-- 20 High Cube Refrigerated (25R9) -->
+      <xs:enumeration value="25S0"/>			<!-- 20 High Cube Named Cargo (25S0) -->
+      <xs:enumeration value="25S1"/>			<!-- 20 High Cube Named Cargo (25S1) -->
+      <xs:enumeration value="25S2"/>			<!-- 20 High Cube Named Cargo (25S2) -->
+      <xs:enumeration value="25S3"/>			<!-- 20 High Cube Named Cargo (25S3) -->
+      <xs:enumeration value="25S4"/>			<!-- 20 High Cube Named Cargo (25S4) -->
+      <xs:enumeration value="25S5"/>			<!-- 20 High Cube Named Cargo (25S5) -->
+      <xs:enumeration value="25S6"/>			<!-- 20 High Cube Named Cargo (25S6) -->
+      <xs:enumeration value="25S7"/>			<!-- 20 High Cube Named Cargo (25S7) -->
+      <xs:enumeration value="25S8"/>			<!-- 20 High Cube Named Cargo (25S8) -->
+      <xs:enumeration value="25S9"/>			<!-- 20 High Cube Named Cargo (25S9) -->
+      <xs:enumeration value="25T0"/>			<!-- 20 High Cube Tank (25T0) -->
+      <xs:enumeration value="25T1"/>			<!-- 20 High Cube Tank (25T1) -->
+      <xs:enumeration value="25T2"/>			<!-- 20 High Cube Tank (25T2) -->
+      <xs:enumeration value="25T3"/>			<!-- 20 High Cube Tank (25T3) -->
+      <xs:enumeration value="25T4"/>			<!-- 20 High Cube Tank (25T4) -->
+      <xs:enumeration value="25T5"/>			<!-- 20 High Cube Tank (25T5) -->
+      <xs:enumeration value="25T6"/>			<!-- 20 High Cube Tank (25T6) -->
+      <xs:enumeration value="25T7"/>			<!-- 20 High Cube Tank (25T7) -->
+      <xs:enumeration value="25T8"/>			<!-- 20 High Cube Tank (25T8) -->
+      <xs:enumeration value="25T9"/>			<!-- 20 High Cube Tank (25T9) -->
+      <xs:enumeration value="25U0"/>			<!-- 20 High Cube Open Top (25U0) -->
+      <xs:enumeration value="25U1"/>			<!-- 20 High Cube Open Top (25U1) -->
+      <xs:enumeration value="25U2"/>			<!-- 20 High Cube Open Top (25U2) -->
+      <xs:enumeration value="25U3"/>			<!-- 20 High Cube Open Top (25U3) -->
+      <xs:enumeration value="25U4"/>			<!-- 20 High Cube Open Top (25U4) -->
+      <xs:enumeration value="25U5"/>			<!-- 20 High Cube Open Top (25U5) -->
+      <xs:enumeration value="25U6"/>			<!-- 20 High Cube Open Top (25U6) -->
+      <xs:enumeration value="25U7"/>			<!-- 20 High Cube Open Top (25U7) -->
+      <xs:enumeration value="25U8"/>			<!-- 20 High Cube Open Top (25U8) -->
+      <xs:enumeration value="25U9"/>			<!-- 20 High Cube Open Top (25U9) -->
+      <xs:enumeration value="25V0"/>			<!-- 20 High Cube Ventilated (25V0) -->
+      <xs:enumeration value="25V1"/>			<!-- 20 High Cube Ventilated (25V1) -->
+      <xs:enumeration value="25V2"/>			<!-- 20 High Cube Ventilated (25V2) -->
+      <xs:enumeration value="25V3"/>			<!-- 20 High Cube Ventilated (25V3) -->
+      <xs:enumeration value="25V4"/>			<!-- 20 High Cube Ventilated (25V4) -->
+      <xs:enumeration value="25V5"/>			<!-- 20 High Cube Ventilated (25V5) -->
+      <xs:enumeration value="25V6"/>			<!-- 20 High Cube Ventilated (25V6) -->
+      <xs:enumeration value="25V7"/>			<!-- 20 High Cube Ventilated (25V7) -->
+      <xs:enumeration value="25V8"/>			<!-- 20 High Cube Ventilated (25V8) -->
+      <xs:enumeration value="25V9"/>			<!-- 20 High Cube Ventilated (25V9) -->
+      <xs:enumeration value="28A0"/>			<!-- 20 Air/Surface (28A0) -->
+      <xs:enumeration value="28B0"/>			<!-- 20 Dry Bulk (28B0) -->
+      <xs:enumeration value="28B1"/>			<!-- 20 Dry Bulk (28B1) -->
+      <xs:enumeration value="28B2"/>			<!-- 20 Dry Bulk (28B2) -->
+      <xs:enumeration value="28B3"/>			<!-- 20 Dry Bulk (28B3) -->
+      <xs:enumeration value="28B4"/>			<!-- 20 Dry Bulk (28B4) -->
+      <xs:enumeration value="28B5"/>			<!-- 20 Dry Bulk (28B5) -->
+      <xs:enumeration value="28B6"/>			<!-- 20 Dry Bulk (28B6) -->
+      <xs:enumeration value="28B7"/>			<!-- 20 Dry Bulk (28B7) -->
+      <xs:enumeration value="28B8"/>			<!-- 20 Dry Bulk (28B8) -->
+      <xs:enumeration value="28B9"/>			<!-- 20 Dry Bulk (28B9) -->
+      <xs:enumeration value="28G0"/>			<!-- 20 General Purpose (28G0) -->
+      <xs:enumeration value="28G1"/>			<!-- 20 General Purpose (28G1) -->
+      <xs:enumeration value="28G2"/>			<!-- 20 General Purpose (28G2) -->
+      <xs:enumeration value="28G3"/>			<!-- 20 General Purpose (28G3) -->
+      <xs:enumeration value="28G4"/>			<!-- 20 General Purpose (28G4) -->
+      <xs:enumeration value="28G5"/>			<!-- 20 General Purpose (28G5) -->
+      <xs:enumeration value="28G6"/>			<!-- 20 General Purpose (28G6) -->
+      <xs:enumeration value="28G7"/>			<!-- 20 General Purpose (28G7) -->
+      <xs:enumeration value="28G8"/>			<!-- 20 General Purpose (28G8) -->
+      <xs:enumeration value="28G9"/>			<!-- 20 General Purpose (28G9) -->
+      <xs:enumeration value="28H0"/>			<!-- 20 Thermal (28H0) -->
+      <xs:enumeration value="28H1"/>			<!-- 20 Thermal (28H1) -->
+      <xs:enumeration value="28H2"/>			<!-- 20 Thermal (28H2) -->
+      <xs:enumeration value="28H3"/>			<!-- 20 Thermal (28H3) -->
+      <xs:enumeration value="28H4"/>			<!-- 20 Thermal (28H4) -->
+      <xs:enumeration value="28H5"/>			<!-- 20 Thermal (28H5) -->
+      <xs:enumeration value="28H6"/>			<!-- 20 Thermal (28H6) -->
+      <xs:enumeration value="28H7"/>			<!-- 20 Thermal (28H7) -->
+      <xs:enumeration value="28H8"/>			<!-- 20 Thermal (28H8) -->
+      <xs:enumeration value="28H9"/>			<!-- 20 Thermal (28H9) -->
+      <xs:enumeration value="28P0"/>			<!-- 20 Platform (28P0) -->
+      <xs:enumeration value="28P1"/>			<!-- 20 Platform (28P1) -->
+      <xs:enumeration value="28P2"/>			<!-- 20 Platform (28P2) -->
+      <xs:enumeration value="28P3"/>			<!-- 20 Platform (28P3) -->
+      <xs:enumeration value="28P4"/>			<!-- 20 Platform (28P4) -->
+      <xs:enumeration value="28P5"/>			<!-- 20 Platform (28P5) -->
+      <xs:enumeration value="28P6"/>			<!-- 20 Platform (28P6) -->
+      <xs:enumeration value="28P7"/>			<!-- 20 Platform (28P7) -->
+      <xs:enumeration value="28P8"/>			<!-- 20 Platform (28P8) -->
+      <xs:enumeration value="28P9"/>			<!-- 20 Platform (28P9) -->
+      <xs:enumeration value="28R0"/>			<!-- 20 Refrigerated (28R0) -->
+      <xs:enumeration value="28R1"/>			<!-- 20 Refrigerated (28R1) -->
+      <xs:enumeration value="28R2"/>			<!-- 20 Refrigerated (28R2) -->
+      <xs:enumeration value="28R3"/>			<!-- 20 Refrigerated (28R3) -->
+      <xs:enumeration value="28R4"/>			<!-- 20 Refrigerated (28R4) -->
+      <xs:enumeration value="28R5"/>			<!-- 20 Refrigerated (28R5) -->
+      <xs:enumeration value="28R6"/>			<!-- 20 Refrigerated (28R6) -->
+      <xs:enumeration value="28R7"/>			<!-- 20 Refrigerated (28R7) -->
+      <xs:enumeration value="28R8"/>			<!-- 20 Refrigerated (28R8) -->
+      <xs:enumeration value="28R9"/>			<!-- 20 Refrigerated (28R9) -->
+      <xs:enumeration value="28S0"/>			<!-- 20 Named Cargo (28S0) -->
+      <xs:enumeration value="28S1"/>			<!-- 20 Named Cargo (28S1) -->
+      <xs:enumeration value="28S2"/>			<!-- 20 Named Cargo (28S2) -->
+      <xs:enumeration value="28S3"/>			<!-- 20 Named Cargo (28S3) -->
+      <xs:enumeration value="28S4"/>			<!-- 20 Named Cargo (28S4) -->
+      <xs:enumeration value="28S5"/>			<!-- 20 Named Cargo (28S5) -->
+      <xs:enumeration value="28S6"/>			<!-- 20 Named Cargo (28S6) -->
+      <xs:enumeration value="28S7"/>			<!-- 20 Named Cargo (28S7) -->
+      <xs:enumeration value="28S8"/>			<!-- 20 Named Cargo (28S8) -->
+      <xs:enumeration value="28S9"/>			<!-- 20 Named Cargo (28S9) -->
+      <xs:enumeration value="28T0"/>			<!-- 20 Tank (28T0) -->
+      <xs:enumeration value="28T1"/>			<!-- 20 Tank (28T1) -->
+      <xs:enumeration value="28T2"/>			<!-- 20 Tank (28T2) -->
+      <xs:enumeration value="28T3"/>			<!-- 20 Tank (28T3) -->
+      <xs:enumeration value="28T4"/>			<!-- 20 Tank (28T4) -->
+      <xs:enumeration value="28T5"/>			<!-- 20 Tank (28T5) -->
+      <xs:enumeration value="28T6"/>			<!-- 20 Tank (28T6) -->
+      <xs:enumeration value="28T7"/>			<!-- 20 Tank (28T7) -->
+      <xs:enumeration value="28T8"/>			<!-- 20 Tank (28T8) -->
+      <xs:enumeration value="28T9"/>			<!-- 20 Tank (28T9) -->
+      <xs:enumeration value="28U0"/>			<!-- 20 Open Top (28U0) -->
+      <xs:enumeration value="28U1"/>			<!-- 20 Open Top (28U1) -->
+      <xs:enumeration value="28U2"/>			<!-- 20 Open Top (28U2) -->
+      <xs:enumeration value="28U3"/>			<!-- 20 Open Top (28U3) -->
+      <xs:enumeration value="28U4"/>			<!-- 20 Open Top (28U4) -->
+      <xs:enumeration value="28U5"/>			<!-- 20 Open Top (28U5) -->
+      <xs:enumeration value="28U6"/>			<!-- 20 Open Top (28U6) -->
+      <xs:enumeration value="28U7"/>			<!-- 20 Open Top (28U7) -->
+      <xs:enumeration value="28U8"/>			<!-- 20 Open Top (28U8) -->
+      <xs:enumeration value="28U9"/>			<!-- 20 Open Top (28U9) -->
+      <xs:enumeration value="28V0"/>			<!-- 20 Ventilated (28V0) -->
+      <xs:enumeration value="28V1"/>			<!-- 20 Ventilated (28V1) -->
+      <xs:enumeration value="28V2"/>			<!-- 20 Ventilated (28V2) -->
+      <xs:enumeration value="28V3"/>			<!-- 20 Ventilated (28V3) -->
+      <xs:enumeration value="28V4"/>			<!-- 20 Ventilated (28V4) -->
+      <xs:enumeration value="28V5"/>			<!-- 20 Ventilated (28V5) -->
+      <xs:enumeration value="28V6"/>			<!-- 20 Ventilated (28V6) -->
+      <xs:enumeration value="28V7"/>			<!-- 20 Ventilated (28V7) -->
+      <xs:enumeration value="28V8"/>			<!-- 20 Ventilated (28V8) -->
+      <xs:enumeration value="28V9"/>			<!-- 20 Ventilated (28V9) -->
+      <xs:enumeration value="29A0"/>			<!-- 20 Air/Surface (29A0) -->
+      <xs:enumeration value="29B0"/>			<!-- 20 Dry Bulk (29B0) -->
+      <xs:enumeration value="29B1"/>			<!-- 20 Dry Bulk (29B1) -->
+      <xs:enumeration value="29B2"/>			<!-- 20 Dry Bulk (29B2) -->
+      <xs:enumeration value="29B3"/>			<!-- 20 Dry Bulk (29B3) -->
+      <xs:enumeration value="29B4"/>			<!-- 20 Dry Bulk (29B4) -->
+      <xs:enumeration value="29B5"/>			<!-- 20 Dry Bulk (29B5) -->
+      <xs:enumeration value="29B6"/>			<!-- 20 Dry Bulk (29B6) -->
+      <xs:enumeration value="29B7"/>			<!-- 20 Dry Bulk (29B7) -->
+      <xs:enumeration value="29B8"/>			<!-- 20 Dry Bulk (29B8) -->
+      <xs:enumeration value="29B9"/>			<!-- 20 Dry Bulk (29B9) -->
+      <xs:enumeration value="29G0"/>			<!-- 20 General Purpose (29G0) -->
+      <xs:enumeration value="29G1"/>			<!-- 20 General Purpose (29G1) -->
+      <xs:enumeration value="29G2"/>			<!-- 20 General Purpose (29G2) -->
+      <xs:enumeration value="29G3"/>			<!-- 20 General Purpose (29G3) -->
+      <xs:enumeration value="29G4"/>			<!-- 20 General Purpose (29G4) -->
+      <xs:enumeration value="29G5"/>			<!-- 20 General Purpose (29G5) -->
+      <xs:enumeration value="29G6"/>			<!-- 20 General Purpose (29G6) -->
+      <xs:enumeration value="29G7"/>			<!-- 20 General Purpose (29G7) -->
+      <xs:enumeration value="29G8"/>			<!-- 20 General Purpose (29G8) -->
+      <xs:enumeration value="29G9"/>			<!-- 20 General Purpose (29G9) -->
+      <xs:enumeration value="29H0"/>			<!-- 20 Thermal (29H0) -->
+      <xs:enumeration value="29H1"/>			<!-- 20 Thermal (29H1) -->
+      <xs:enumeration value="29H2"/>			<!-- 20 Thermal (29H2) -->
+      <xs:enumeration value="29H3"/>			<!-- 20 Thermal (29H3) -->
+      <xs:enumeration value="29H4"/>			<!-- 20 Thermal (29H4) -->
+      <xs:enumeration value="29H5"/>			<!-- 20 Thermal (29H5) -->
+      <xs:enumeration value="29H6"/>			<!-- 20 Thermal (29H6) -->
+      <xs:enumeration value="29H7"/>			<!-- 20 Thermal (29H7) -->
+      <xs:enumeration value="29H8"/>			<!-- 20 Thermal (29H8) -->
+      <xs:enumeration value="29H9"/>			<!-- 20 Thermal (29H9) -->
+      <xs:enumeration value="29P0"/>			<!-- 20 Platform (29P0) -->
+      <xs:enumeration value="29P1"/>			<!-- 20 Platform (29P1) -->
+      <xs:enumeration value="29P2"/>			<!-- 20 Platform (29P2) -->
+      <xs:enumeration value="29P3"/>			<!-- 20 Platform (29P3) -->
+      <xs:enumeration value="29P4"/>			<!-- 20 Platform (29P4) -->
+      <xs:enumeration value="29P5"/>			<!-- 20 Platform (29P5) -->
+      <xs:enumeration value="29P6"/>			<!-- 20 Platform (29P6) -->
+      <xs:enumeration value="29P7"/>			<!-- 20 Platform (29P7) -->
+      <xs:enumeration value="29P8"/>			<!-- 20 Platform (29P8) -->
+      <xs:enumeration value="29P9"/>			<!-- 20 Platform (29P9) -->
+      <xs:enumeration value="29R0"/>			<!-- 20 Refrigerated (29R0) -->
+      <xs:enumeration value="29R1"/>			<!-- 20 Refrigerated (29R1) -->
+      <xs:enumeration value="29R2"/>			<!-- 20 Refrigerated (29R2) -->
+      <xs:enumeration value="29R3"/>			<!-- 20 Refrigerated (29R3) -->
+
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>
